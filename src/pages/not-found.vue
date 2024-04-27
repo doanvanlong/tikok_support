@@ -1,22 +1,153 @@
-<!-- eslint-disable vue/html-indent -->
-<!-- eslint-disable no-undef -->
-
 <template>
-  <header class="flex h-screen items-center justify-center">
-    <h1
-      class="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100"
+  <nav class="flex items-center justify-between flex-wrap bg-teal-500 p-6">
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <svg
+        class="fill-current h-8 w-8 mr-2"
+        width="54"
+        height="54"
+        viewBox="0 0 54 54"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13.5 22.1c1.8-7.2 6.3-10.8 13.5-10.8 10.8 0 12.15 8.1 17.55 9.45 3.6.9 6.75-.45 9.45-4.05-1.8 7.2-6.3 10.8-13.5 10.8-10.8 0-12.15-8.1-17.55-9.45-3.6-.9-6.75.45-9.45 4.05zM0 38.3c1.8-7.2 6.3-10.8 13.5-10.8 10.8 0 12.15 8.1 17.55 9.45 3.6.9 6.75-.45 9.45-4.05-1.8 7.2-6.3 10.8-13.5 10.8-10.8 0-12.15-8.1-17.55-9.45-3.6-.9-6.75.45-9.45 4.05z"
+        />
+      </svg>
+      <span class="font-semibold text-xl tracking-tight">Tiktok Support</span>
+    </div>
+    <div class="block lg:hidden">
+      <button
+        class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white"
+      >
+        <svg
+          class="fill-current h-3 w-3"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Menu</title>
+          <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+        </svg>
+      </button>
+    </div>
+    <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+      <div class="text-sm lg:flex-grow">
+        <a
+           @click="handleClick(111)"
+          :class="[
+            isActive == 111 ? 'text-white' : '',
+            'block mt-4 lg:inline-block lg:mt-0 cursor-pointer text-teal-200 hover:text-white',
+          ]"
+        >
+          Awaiting Shipment
+        </a>
+        <a
+           @click="handleClick(112)"
+          :class="[
+            isActive == 112 ? 'text-white' : '',
+            'ml-3 block mt-4 lg:inline-block cursor-pointer lg:mt-0 text-teal-200 hover:text-white',
+          ]"
+        >
+          Awaiting Collection
+        </a>
+        <a
+           @click="handleClick(105)"
+          :class="[
+            isActive == 105 ? 'text-white' : '',
+            'ml-3 block mt-4 lg:inline-block lg:mt-0 cursor-pointer text-teal-200 hover:text-white',
+          ]"
+        >
+          Pending
+        </a>
+      </div>
+      <div>
+        <a
+          href="#"
+          class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
+          >Demo App</a
+        >
+      </div>
+    </div>
+  </nav>
+  <div class="bg-indigo-900 text-center py-4 lg:px-4">
+    <div
+      class="p-2 bg-indigo-800 items-center text-indigo-100 leading-none lg:rounded-full flex lg:inline-flex"
+      role="alert"
     >
-     {{ userData.name }} {{ userData.acc_code }}
-      {{ id }}
-    </h1>
-    <h2>Order List</h2>
-    <ul>
-      <li v-for="order in orderList" :key="order.order_id">
-        <!-- Hiển thị thông tin của từng đơn hàng -->
-        {{ order.order_id }} - {{ order.order_status }} - {{ formatDate(order.update_time) }}
-      </li>
-    </ul>
-  </header>
+      <span
+        class="flex rounded-full bg-indigo-500 uppercase px-2 py-1 text-xs font-bold mr-3"
+        >{{ userData.person }} ACC</span
+      >
+      <span class="font-semibold mr-2 text-left flex-auto">
+        ({{ userData.acc_code }}) {{ id }}</span
+      >
+      <svg
+        class="fill-current opacity-75 h-4 w-4"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+      >
+        <path
+          d="M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z"
+        />
+      </svg>
+    </div>
+  </div>
+  <div class="container m-auto pt-3">
+    <template v-if="loading" >
+      <div class="text-center mb-3">
+          <div role="status">
+              <svg aria-hidden="true" class="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                  <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+              </svg>
+              <span class="sr-only">Loading...</span>
+          </div>
+      </div>
+    </template>
+    <template v-if="orderList.length">
+        <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+          <li v-for="order in orderList" :key="order.order_id" class="pb-3 sm:pb-4">
+            <div class="flex items-center space-x-4 rtl:space-x-reverse">
+              <div class="flex-1 min-w-0">
+                <p
+                  class="text-sm font-medium text-gray-900 truncate dark:text-white"
+                >
+                  Order Id: {{ order.order_id }}
+                </p>
+                <p class="text-sm text-gray-500 truncate dark:text-gray-400">
+                  Date Order: {{ formatDate(order.update_time) }}
+                </p>
+              </div>
+              <div
+                class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white"
+              >
+                <template v-if="order.check">
+                  <span
+                    class="bg-green-100 text-green-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300"
+                    >Đã Add</span
+                  >
+                </template>
+                <template v-else>
+                  <span
+                    class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
+                    >Chưa Add</span
+                  >
+                </template>
+              </div>
+            </div>
+          </li>
+        </ul>
+    </template>
+    <template v-else>
+      <div class="flex items-center p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+      <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+      </svg>
+      <span class="sr-only">Info</span>
+      <div>
+        <span class="font-medium">Hiện tại chưa có Order !</span> Chăm ACC  tý đi nhóoo.
+      </div>
+      </div>
+    </template>
+  </div>
 </template>
 <script>
 // eslint-disable-next-line import/no-relative-packages
@@ -30,6 +161,9 @@ export default {
       token: this.$route.query.token,
       userData: [], // You can store the fetched user data here
       orderList: [], // You can store the fetched user data here
+      isActive: 111,
+      orderEnd: [],
+      loading: true,
     };
   },
   created() {
@@ -37,10 +171,25 @@ export default {
     this.fetchShopData();
   },
   methods: {
+    handleClick(id) {
+      // eslint-disable-next-line no-alert
+      this.loading = true;
+      if (this.isActive !== id) {
+        this.isActive = id;
+        this.fetchShopData(); // Gọi lại fetchShopData khi isActive thay đổi
+      }
+    },
     formatDate(timestamp) {
       return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
     },
-    getOrderListTiktok(appKey, secret, accessToken, pageSize, orderStatus, sortBy) {
+    getOrderListTiktok(
+      appKey,
+      secret,
+      accessToken,
+      pageSize,
+      orderStatus,
+      sortBy,
+    ) {
       const timestamp = Math.floor(Date.now() / 1000);
       const queries = {
         app_key: appKey,
@@ -103,12 +252,61 @@ export default {
             response.data.app_secret,
             response.data.app_access_token,
             20,
-            112,
+            this.isActive,
             'CREATE_TIME',
+          // eslint-disable-next-line consistent-return
           ).then((orderList) => {
             // eslint-disable-next-line no-console
             console.log(orderList); // Log kết quả của getOrderListTiktok()
-            this.orderList = orderList.data.order_list;
+            this.loading = false;
+            this.orderList = [];
+            if (orderList.data.total > 0) {
+            // Tạo mảng promises để chứa các promise từ việc gọi API kiểm tra order id
+              const checkOrderPromises = [];
+
+              // Lặp qua danh sách đơn hàng và gọi API kiểm tra từng order id
+              orderList.data.order_list.forEach((order) => {
+                const orderId = order.order_id;
+                // eslint-disable-next-line no-undef
+                const checkOrderPromise = axios.get(
+                  `https://hq.vuongandong.com/danang/api/order.php?act=check_order&order_id=${orderId}`,
+                );
+                // Đẩy promise vào mảng promises
+                checkOrderPromises.push(checkOrderPromise);
+              });
+              // Sử dụng Promise.all để chờ tất cả các promise hoàn thành
+              return Promise.all(checkOrderPromises)
+                .then((responses) => {
+                  // Xử lý kết quả từ mỗi promise
+                  // eslint-disable-next-line no-shadow
+                  let k = 0;
+                  // eslint-disable-next-line no-shadow
+                  responses.forEach((response) => {
+                    // console.log(response);
+                    // Kiểm tra response để xác định xem order id đã tồn tại hay không
+                    // eslint-disable-next-line camelcase
+                    const result = orderList.data.order_list.find(({ order_id }) => order_id === response.data.order_id);
+                    console.log(result);
+                    if (result) {
+                      // eslint-disable-next-line no-param-reassign
+                      orderList.data.order_list[k].check = response.data;
+                    }
+                    // eslint-disable-next-line no-plusplus
+                    k++;
+                    this.orderEnd.push({
+                      status: response.data.status,
+                      order_id: response.data.order_id,
+                    });
+                  });
+
+                  // Sau khi kiểm tra xong, gán orderList cho this.orderList
+                  this.orderList = orderList.data.order_list;
+                  console.log(this.orderList);
+                })
+                .catch((error) => {
+                  console.error('Error while checking orders:', error);
+                });
+            }
           });
         })
         .catch((error) => {

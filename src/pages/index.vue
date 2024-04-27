@@ -82,7 +82,7 @@ onMounted(() => {
       <a
         target="_blank"
         rel="noopener"
-        href="https://github.com/lecoueyl/vue3-template"
+        href="https://github.com/doanvanlong/tikok_support"
         class="inline-flex items-center space-x-1 rounded-md bg-indigo-600 py-4 px-6 font-medium text-indigo-50 shadow-xl transition duration-300 hover:bg-indigo-700 hover:shadow-md"
       >
         <svg

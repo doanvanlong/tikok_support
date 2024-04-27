@@ -173,8 +173,8 @@ export default {
   methods: {
     handleClick(id) {
       // eslint-disable-next-line no-alert
-      this.loading = true;
       if (this.isActive !== id) {
+        this.loading = true;
         this.isActive = id;
         this.fetchShopData(); // Gọi lại fetchShopData khi isActive thay đổi
       }
@@ -251,7 +251,7 @@ export default {
             response.data.app_key,
             response.data.app_secret,
             response.data.app_access_token,
-            20,
+            100,
             this.isActive,
             'CREATE_TIME',
           // eslint-disable-next-line consistent-return

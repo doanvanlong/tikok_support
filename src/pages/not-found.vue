@@ -31,27 +31,27 @@
     <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
       <div class="text-sm lg:flex-grow">
         <a
-           @click="handleClick(111)"
+           @click="handleClick(AWAITING_SHIPMENT)"
           :class="[
-            isActive == 111 ? 'text-white' : '',
+            isActive == AWAITING_SHIPMENT ? 'text-white' : '',
             'block mt-4 lg:inline-block lg:mt-0 cursor-pointer text-teal-200 hover:text-white',
           ]"
         >
           Awaiting Shipment
         </a>
         <a
-           @click="handleClick(112)"
+           @click="handleClick(AWAITING_COLLECTION)"
           :class="[
-            isActive == 112 ? 'text-white' : '',
+            isActive == AWAITING_COLLECTION ? 'text-white' : '',
             'ml-3 block mt-4 lg:inline-block cursor-pointer lg:mt-0 text-teal-200 hover:text-white',
           ]"
         >
           Awaiting Collection
         </a>
         <a
-           @click="handleClick(105)"
+           @click="handleClick(ON_HOLD)"
           :class="[
-            isActive == 105 ? 'text-white' : '',
+            isActive == ON_HOLD ? 'text-white' : '',
             'ml-3 block mt-4 lg:inline-block lg:mt-0 cursor-pointer text-teal-200 hover:text-white',
           ]"
         >
@@ -62,7 +62,7 @@
         <a
           href="#"
           class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0"
-          >Demo App</a
+          >To day (US)</a
         >
       </div>
     </div>
@@ -106,6 +106,7 @@
         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
           <li v-for="order in orderList" :key="order.order_id" class="pb-3 sm:pb-4">
             <div class="flex items-center space-x-4 rtl:space-x-reverse">
+
               <div class="flex-1 min-w-0">
                 <p
                   class="text-sm font-medium text-gray-900 truncate dark:text-white"
@@ -113,9 +114,30 @@
                   Order Id: {{ order.order_id }}
                 </p>
                 <p class="text-sm text-gray-500 truncate dark:text-gray-400">
-                  Date Order: {{ formatDate(order.update_time) }}
+                  Date Order: US - {{ formatDateUS(order.update_time) }}
+                 VN - {{ formatDate(order.update_time) }}
                 </p>
               </div>
+               <div class="flex-shrink-0">
+                  <div class="flex items-center text-xs"  v-for="item in order.items" :key="item.product_id">
+                     <div class="relative">
+                      <img  class="mr-2 w-12 h-12 rounded-full cursor-pointer" :src="item.sku_image"  @click="showPopup = true" :alt="item.sku_name">
+                      <!-- Popup -->
+                      <div v-if="showPopup" class="fixed top-2/4 left-2/4 z-50 -translate-x-1/2 -translate-y-1/2 w-2/5 h-2/5 flex items-center justify-center bg-black bg-opacity-75">
+                        <!-- Nội dung popup -->
+                        <div class="bg-white p-4">
+                          <!-- Hình ảnh hiển thị -->
+                          <img class="w-full" :src="item.sku_image" :alt="item.sku_name">
+                          <!-- Nút đóng popup -->
+                          <button @click="showPopup = false" class="absolute top-0 right-0 -translate-y-1/2 p-2 text-black text-4xl">×</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      {{item.quantity}} x {{item.sku_name}}
+                    </div>
+                  </div>
+                </div>
               <div
                 class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white"
               >
@@ -153,17 +175,29 @@
 // eslint-disable-next-line import/no-relative-packages
 import CryptoJS from 'crypto-js';
 import moment from 'moment';
+import 'moment-timezone';
 
 export default {
   data() {
     return {
       id: this.$route.query.id,
       token: this.$route.query.token,
+      maximum: this.$route.query.maximum,
       userData: [], // You can store the fetched user data here
       orderList: [], // You can store the fetched user data here
+      orderList2: [], // You can store the fetched user data here
       isActive: 111,
       orderEnd: [],
+      showPopup: false,
       loading: true,
+      page: 1,
+      AWAITING_SHIPMENT: 111,
+      AWAITING_COLLECTION: 112,
+      ON_HOLD: 105,
+      app_key: '',
+      app_secret: '',
+      app_access_token: '',
+      k2: 0,
     };
   },
   created() {
@@ -182,6 +216,9 @@ export default {
     formatDate(timestamp) {
       return moment.unix(timestamp).format('YYYY-MM-DD HH:mm:ss');
     },
+    formatDateUS(timestamp) {
+      return moment.unix(timestamp).tz('America/Los_Angeles').format('YYYY-MM-DD HH:mm:ss');
+    },
     getOrderListTiktok(
       appKey,
       secret,
@@ -189,15 +226,24 @@ export default {
       pageSize,
       orderStatus,
       sortBy,
+      createTimeFrom,
+      createTimeTo,
     ) {
       const timestamp = Math.floor(Date.now() / 1000);
       const queries = {
         app_key: appKey,
         timestamp,
         page_size: pageSize,
-        order_status: orderStatus,
         sort_by: sortBy,
+        create_time_from: createTimeFrom,
+        create_time_to: createTimeTo,
       };
+      let string = '';
+      if (this.isActive !== this.ON_HOLD) {
+        queries.order_status = orderStatus;
+        string += `&order_status=${orderStatus}`;
+      }
+
       const path = '/api/orders/search';
       const sign = this.generateSHA256(path, queries, secret);
 
@@ -205,9 +251,41 @@ export default {
       const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
 
       // Construct the TikTok API URL with the proxy server URL
-      const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&access_token=${accessToken}&sign=${sign}&timestamp=${timestamp}&page_size=${pageSize}&order_status=${orderStatus}&sort_by=${sortBy}`;
-
+      const apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&access_token=${accessToken}&sign=${sign}&timestamp=${timestamp}&page_size=${pageSize}${string}&sort_by=${sortBy}&create_time_from=${createTimeFrom}&create_time_to=${createTimeTo}`;
       // Use axios to make a POST request to the proxy server URL
+      // eslint-disable-next-line no-undef
+      return axios
+        .post(proxyUrl + apiUrl, {})
+        .then((response) => response.data)
+        .catch((error) => {
+          // eslint-disable-next-line no-console
+          console.log('Error:', error);
+          throw error;
+        });
+    },
+    getOrderDetailTiktok(
+      appKey,
+      secret,
+      accessToken,
+      orderIdList,
+    ) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const queries = {
+        app_key: appKey,
+        timestamp,
+        order_id_list: `["${orderIdList}"]`,
+      };
+
+      const path = '/api/orders/detail/query';
+      const sign = this.generateSHA256(path, queries, secret);
+
+      // Define the URL of your proxy server
+      const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+
+      // Construct the TikTok API URL with the proxy server URL
+      let apiUrl = `https://open-api.tiktokglobalshop.com${path}?app_key=${appKey}&access_token=${accessToken}&sign=${sign}&timestamp=${timestamp}&order_id_list=`;
+      // Use axios to make a POST request to the proxy server URL
+      apiUrl += `["${orderIdList}"]`;
       // eslint-disable-next-line no-undef
       return axios
         .post(proxyUrl + apiUrl, {})
@@ -247,6 +325,38 @@ export default {
         .then((response) => {
           console.log(response);
           this.userData = response.data;
+          // Tạo một đối tượng Date đại diện cho ngày hôm nay
+          // Lấy ngày hôm nay với múi giờ Los Angeles
+          const date = moment.tz('America/Los_Angeles');
+          // Đặt thời gian trong ngày thành 0:00 AM
+          date.startOf('day');
+          date.subtract(60, 'minutes');
+          // truwf ddi 1h để xly pending
+          const date2 = moment.tz('America/Los_Angeles');
+          // Đặt thời gian trong ngày thành 0:00 AM
+          date2.startOf('day');
+          // Đặt thời gian trong ngày thành 12:00 PM
+          date2.hours(24).minutes(0).seconds(0);
+          if (this.maximum === true) {
+            // order nhiều >100
+            // awaiting collection : nhiều thì date nên chia 3 khung giờ
+            // eslint-disable-next-line eqeqeq
+            if (this.page == 1) {
+              date2.hours(8).minutes(0).seconds(0);
+            } else if (this.page === 2) {
+              date.hours(8).minutes(0).seconds(0);
+              date2.hours(16).minutes(0).seconds(0);
+            } else if (this.page === 3) {
+              date.hours(16).minutes(0).seconds(0);
+              date2.hours(24).minutes(0).seconds(0);
+            }
+          }
+          const startTimestamp = date.unix();
+          // Chuyển đổi đối tượng Moment thành timestamp
+          const endTimestamp = date2.unix();
+          this.app_key = response.data.app_key;
+          this.app_secret = response.data.app_secret;
+          this.app_access_token = response.data.app_access_token;
           return this.getOrderListTiktok(
             response.data.app_key,
             response.data.app_secret,
@@ -254,18 +364,28 @@ export default {
             100,
             this.isActive,
             'CREATE_TIME',
+            startTimestamp,
+            endTimestamp,
           // eslint-disable-next-line consistent-return
-          ).then((orderList) => {
+          ).then((orderListt) => {
             // eslint-disable-next-line no-console
-            console.log(orderList); // Log kết quả của getOrderListTiktok()
+            console.log(orderListt); // Log kết quả của getOrderListTiktok()
+            // const listOrder = orderList.data.order_list.map((v) => v.order_id);
             this.loading = false;
             this.orderList = [];
-            if (orderList.data.total > 0) {
+            this.orderList2 = orderListt;
+            if (this.orderList2.data.total > 0) {
             // Tạo mảng promises để chứa các promise từ việc gọi API kiểm tra order id
               const checkOrderPromises = [];
 
               // Lặp qua danh sách đơn hàng và gọi API kiểm tra từng order id
-              orderList.data.order_list.forEach((order) => {
+              if (this.isActive === this.ON_HOLD) {
+                // eslint-disable-next-line no-unused-vars
+                const orderOnHold = this.orderList2.data.order_list.filter((v) => (v.order_status === this.ON_HOLD ? v : ''));
+                // eslint-disable-next-line no-param-reassign
+                this.orderList2.data.order_list = orderOnHold;
+              }
+              this.orderList2.data.order_list.forEach((order) => {
                 const orderId = order.order_id;
                 // eslint-disable-next-line no-undef
                 const checkOrderPromise = axios.get(
@@ -281,16 +401,27 @@ export default {
                   // eslint-disable-next-line no-shadow
                   let k = 0;
                   // eslint-disable-next-line no-shadow
+                  this.k2 = 0;
+                  // eslint-disable-next-line no-shadow
                   responses.forEach((response) => {
                     // console.log(response);
                     // Kiểm tra response để xác định xem order id đã tồn tại hay không
                     // eslint-disable-next-line camelcase
-                    const result = orderList.data.order_list.find(({ order_id }) => order_id === response.data.order_id);
+                    const result = this.orderList2.data.order_list.find(({ order_id }) => order_id === response.data.order_id);
                     console.log(result);
                     if (result) {
                       // eslint-disable-next-line no-param-reassign
-                      orderList.data.order_list[k].check = response.data;
+                      this.orderList2.data.order_list[k].check = response.data;
                     }
+                    // eslint-disable-next-line max-len
+                    this.getOrderDetailTiktok(this.app_key, this.app_secret, this.app_access_token, this.orderList2.data.order_list[k].order_id).then((res) => {
+                      if (res.data.order_list.length > 0) {
+                        // eslint-disable-next-line no-param-reassign
+                        this.orderList2.data.order_list[[this.k2]].items = res.data.order_list[0].item_list;
+                        // console.log(this.orderList2.data.order_list[[this.k2]]);
+                        this.k2 += 1;
+                      }
+                    });
                     // eslint-disable-next-line no-plusplus
                     k++;
                     this.orderEnd.push({
@@ -300,7 +431,7 @@ export default {
                   });
 
                   // Sau khi kiểm tra xong, gán orderList cho this.orderList
-                  this.orderList = orderList.data.order_list;
+                  this.orderList = this.orderList2.data.order_list;
                   console.log(this.orderList);
                 })
                 .catch((error) => {

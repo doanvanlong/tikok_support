@@ -57,7 +57,7 @@ onMounted(() => {
 
   <main class="mx-auto flex h-screen max-w-3xl flex-col items-center justify-center py-16 px-4">
     <h1 class="pb-20 text-center text-6xl text-gray-700 transition-colors dark:text-gray-100">
-      Vue.js starter template
+      Tiktok Support DNW
     </h1>
 
     <div class="flex justify-center space-x-4 pb-10">

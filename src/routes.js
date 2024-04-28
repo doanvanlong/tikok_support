@@ -17,6 +17,7 @@ export const routes = [
     props: (route) => ({
       token: route.query.token,
       id: route.query.id,
+      maximum: route.query.maximum,
     // eslint-disable-next-line comma-dangle
     })
   },

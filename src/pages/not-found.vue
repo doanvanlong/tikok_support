@@ -90,6 +90,20 @@
       </svg>
     </div>
   </div>
+  <div  v-if="show" id="alert-border-3" class="flex items-center p-4 mb-4 text-green-800 border-t-4 border-green-300 bg-green-50 dark:text-green-400 dark:bg-gray-800 dark:border-green-800" role="alert">
+    <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+    </svg>
+        <div class="ms-3 text-sm font-medium" target="_blank" @click="show=false">
+              Add Order Successfully! <a :href="orderDetailAdmin" class="font-semibold underline hover:no-underline">Order Detail</a>. Give it a click if you like.
+         </div>
+    <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-gray-700"  data-dismiss-target="#alert-border-3" aria-label="Close">
+      <span class="sr-only">Dismiss</span>
+      <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+      </svg>
+    </button>
+</div>
   <div class="container m-auto pt-3">
     <template v-if="loading" >
       <div class="text-center mb-3">
@@ -148,8 +162,8 @@
                   >
                 </template>
                 <template v-else>
-                  <span
-                    class="bg-yellow-100 text-yellow-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
+                  <span @click="callRequest(adminCronFail+id+'&ids='+order.order_id)"
+                    class="bg-yellow-100 text-yellow-800 text-xs cursor-pointer font-medium me-2 px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
                     >Chưa Add</span
                   >
                 </template>
@@ -176,7 +190,8 @@
 import CryptoJS from 'crypto-js';
 import moment from 'moment';
 import 'moment-timezone';
-
+// USLC9UELE7&ids=
+// eslint-disable-next-line no-unused-vars
 export default {
   data() {
     return {
@@ -191,6 +206,7 @@ export default {
       showPopup: false,
       loading: true,
       page: 1,
+      adminCronFail: 'https://hq.vuongandong.com/danang/api/app-cron-sync-tiktok-fail-label.php?shop_code=',
       AWAITING_SHIPMENT: 111,
       AWAITING_COLLECTION: 112,
       ON_HOLD: 105,
@@ -198,6 +214,8 @@ export default {
       app_secret: '',
       app_access_token: '',
       k2: 0,
+      orderDetailAdmin: '',
+      show: false,
     };
   },
   created() {
@@ -205,6 +223,32 @@ export default {
     this.fetchShopData();
   },
   methods: {
+    // eslint-disable-next-line no-unused-vars
+    callRequest(_url) {
+      if (_url) {
+        this.loading = true;
+        // eslint-disable-next-line no-undef
+        axios.get(_url)
+          .then((response) => {
+          // Xử lý dữ liệu từ phản hồi API
+            console.log(response);
+            // eslint-disable-next-line no-param-reassign
+            this.fetchShopData();
+            this.hide = true;
+            // response = JSON.parse(response);
+            // if (response.data.order_id) {
+            //   this.fetchShopData();
+            // }
+          })
+          .catch((error) => {
+            // Xử lý lỗi nếu có
+            console.error(error);
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      }
+    },
     handleClick(id) {
       // eslint-disable-next-line no-alert
       if (this.isActive !== id) {

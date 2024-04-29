@@ -136,8 +136,12 @@
                       </h3>
                       <div class="mt-2">
                           <p class="text-sm text-gray-500">
-                              Please click accept to authenticate the proxy server.
-                          </p>
+                              Please click accept to authenticate the proxy server.<br>
+                              Demo:
+                         </p>
+                         <div class="bg-yellow-300 mt-4">
+                            <img src="https://hqvuongandong.nyc3.cdn.digitaloceanspaces.com/hd-4584-1714363684.png" class=" h-full w-full ">
+                          </div>
                       </div>
                   </div>
               </div>
